@@ -1,12 +1,14 @@
 <?php
 session_start();
 
-
+if(isset($_SESSION['connect'])) {
+	header('location: index.php');
+	exit();
+}
 
 if(!empty($_POST['email']) && !empty($_POST['password']) && !empty($_POST['password_two'])) {
 	
 	require('src/database.php');
-	
 	
 	$email = htmlspecialchars($_POST['email']);
 	$password = htmlspecialchars($_POST['password']);
@@ -18,12 +20,10 @@ if(!empty($_POST['email']) && !empty($_POST['password']) && !empty($_POST['passw
 		exit();
 	}
 
-
 	if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 		header('location: inscription.php?error=1&message=Votre adresse email est invalide.');
 		exit();
 	}
-
 
 	$req = $database->prepare('SELECT count(*) as numberEmail FROM userflix WHERE email = ?');
 	$req->execute(array($email));
@@ -33,9 +33,8 @@ if(!empty($_POST['email']) && !empty($_POST['password']) && !empty($_POST['passw
 			exit();
 		}
 	}
-//----HASH
+	//----HASH
 	$secret = "bibi" .sha1($email). "313";
-
 	$password = "aq1". sha1($password. "123") . "35";
 
 	//------ENVOI
@@ -47,7 +46,6 @@ if(!empty($_POST['email']) && !empty($_POST['password']) && !empty($_POST['passw
 	exit();	
 }
 ?>
-
 
 <!DOCTYPE html>
 <html>
@@ -69,6 +67,7 @@ if(!empty($_POST['email']) && !empty($_POST['password']) && !empty($_POST['passw
 				if(isset($_GET['error'])) {
 					if(isset($_GET['message'])) {
 						echo '<div class="alert error">' .htmlspecialchars($_GET['message']). '</div>';
+						
 					}
 				} else if (isset($_GET['success'])) {
 					echo '<div class="alert success">Vous êtes désormais inscrit. <a href="index.php">Connectez-vous</a></div>';
