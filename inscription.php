@@ -29,18 +29,22 @@ if(!empty($_POST['email']) && !empty($_POST['password']) && !empty($_POST['passw
 	$req->execute(array($email));
 	while($x = $req->fetch()) {
 		if($x['numberEmail'] != 0) {
-			header('location: inscription.php?error=1&message=Votre mail est déjà utilisé');
+			header('location: inscription.php?error=1&message=Votre mail est déjà utilisé par un autre utilisateur');
 			exit();
 		}
 	}
-/*-------------18:55
-	$secret = "bibi" + sha1($password) + 313;
+//----HASH
+	$secret = "bibi" .sha1($email). "313";
 
-	$req = $database->prepare('INSERT INTO email, password, secret FROM userflix WHERE email = ?, password = ?, secret = ?');
+	$password = "aq1". sha1($password. "123") . "35";
+
+	//------ENVOI
+
+	$req = $database->prepare('INSERT INTO userflix (email, password, secret) VALUES(?, ?, ?)');
 	$req->execute(array($email, $password, $secret));
 
-*/
-	
+	header('location: inscription.php?success=1');
+	exit();	
 }
 ?>
 
@@ -66,6 +70,8 @@ if(!empty($_POST['email']) && !empty($_POST['password']) && !empty($_POST['passw
 					if(isset($_GET['message'])) {
 						echo '<div class="alert error">' .htmlspecialchars($_GET['message']). '</div>';
 					}
+				} else if (isset($_GET['success'])) {
+					echo '<div class="alert success">Vous êtes désormais inscrit. <a href="index.php">Connectez-vous</a></div>';
 				}
 			?>
 

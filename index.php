@@ -1,4 +1,49 @@
 <?php?>
+<?php
+session_start();
+
+if(!empty($_POST['email']) && !empty($_POST['password'])) {
+	require('src/database.php');
+
+	$email = htmlspecialchars($_POST['email']);
+	$password = htmlspecialchars($_POST['password']);
+
+	if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+		header('location: index.php?error=1&message=Votre adresse email est invalide.');
+		exit();
+	}
+
+	$password = "aq1". sha1($password. "123") . "35";
+
+	$req = $database->prepare('SELECT count(*) as numberEmail FROM userflix WHERE email = ?');
+	$req->execute(array($email));
+
+	while($x = $req->fetch()) {
+		if ($x['numberEmail'] != 1) {
+			header('location: index.php?error=1$message=Impossible de vous authentifier');
+			exit();
+		}
+	}
+
+	$req = $database->prepare('SELECT * FROM userflix WHERE email = ?');
+	$req->execute(array($email));
+
+	while($user = $req->fetch()) {
+		if($password == $user['password']) {
+			$_SESSION['connect'] = 1;
+			$_SESSION['email'] = $user['email'];
+
+			header('location: index.php?success=1');
+			exit();
+		} else {
+			header('location: index.php?error=1$message=Impossible de vous authentifier');
+			exit();
+		}
+	}
+
+}
+
+?>
 
 
 
@@ -18,6 +63,18 @@
 	<section>
 		<div id="login-body">
 				<h1>S'identifier</h1>
+
+				<?php
+					if(isset($_GET['error'])) {
+						if(isset($_GET['message'])) {
+							echo '<div class="alert error">'.htmlspecialchars($_GET['message']). '</div>';
+						}
+					} else if (isset($_GET['success'])) {
+						echo '<div class="alert success">Vous êtes maintenant connecté</div>';
+					}
+				?>
+
+
 
 				<form method="post" action="index.php">
 					<input type="email" name="email" placeholder="Votre adresse email" required />
